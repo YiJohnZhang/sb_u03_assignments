@@ -29,7 +29,8 @@ app.get('/mean', middleware.validateQueryString, (request, response) => {
     console.log(mean)
     response.json({
         operation: 'mean',
-        mean
+        mean,
+        timestamp: Date.now()
     });
 
 });
@@ -39,7 +40,8 @@ app.get('/median', middleware.validateQueryString, (request, response) => {
     median = helperFunctions.median(response.locals.numsArray);
     response.json({
         operation: 'median',
-        median
+        median,
+        timestamp: Date.now()
     });
 
 });
@@ -51,21 +53,23 @@ app.get('/mode', middleware.validateQueryString, (request, response) => {
     response.json({
         operation: 'mode',
         mode,
+        timestamp: Date.now()
     });
 
 });
 
 app.get('/all', middleware.validateQueryString, (request, response) => {
 
-    mean = helperFunctions.mean();
-    median = helperFunctions.median();
-    mode = helperFunctions.mode();
+    mean = helperFunctions.mean(response.locals.numsArray);
+    median = helperFunctions.median(response.locals.numsArray);
+    mode = helperFunctions.mode(response.locals.numsArray);
 
     response.json({
         operation: 'all',
         mean,
         median,
         mode,
+        timestamp: Date.now()
     });
 
 });
