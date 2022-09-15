@@ -25,9 +25,9 @@ const PORT_NUMBER = 3000;
 //  =======
 app.get('/mean', middleware.validateQueryString, (request, response) => {
 
-    mean = helperFunctions.mean(req.query.nums);
-
-    response.send(200).json({
+    mean = helperFunctions.mean(response.locals.numsArray);
+    console.log(mean)
+    response.json({
         operation: 'mean',
         mean
     });
@@ -36,8 +36,8 @@ app.get('/mean', middleware.validateQueryString, (request, response) => {
 
 app.get('/median', middleware.validateQueryString, (request, response) => {
 
-    median = helperFunctions.median();
-    response.send(200).json({
+    median = helperFunctions.median(response.locals.numsArray);
+    response.json({
         operation: 'median',
         median
     });
@@ -46,9 +46,9 @@ app.get('/median', middleware.validateQueryString, (request, response) => {
 
 app.get('/mode', middleware.validateQueryString, (request, response) => {
 
-    mode = helperFunctions.mode();
+    mode = helperFunctions.mode(response.locals.numsArray);
 
-    response.send(200).json({
+    response.json({
         operation: 'mode',
         mode,
     });
@@ -61,7 +61,7 @@ app.get('/all', middleware.validateQueryString, (request, response) => {
     median = helperFunctions.median();
     mode = helperFunctions.mode();
 
-    response.send(200).json({
+    response.json({
         operation: 'all',
         mean,
         median,
