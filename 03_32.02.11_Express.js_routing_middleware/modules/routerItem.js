@@ -6,40 +6,83 @@ const fakeDB = require('./fakedb');
 
 const findItem = (itemName) => {
 
-    return fakeDB.find((element) => element.name == itemName);
+    return fakeDB.find((element) => element.name.toLowerCase() == itemName);
 
 };
 
+const findIndex = (itemName) => {
+
+    return fakeDB.find((element, index) => {
+        if (element.name.toLowerCase() == itemName){
+            return index;
+        }
+    });
+
+};
+
+const filterItem = (itemName) => {
+
+    return fakeDB.filter((element) => element.name.toLowerCase() != itemName);
+
+}
+
+
 router.get('/', (req, res) => {
 
-    return res.json();
+    return res.send(fakeDB);
 
 });
 
 router.post('/', (req, res) => {
 
+    const requestBody = req.params.body;
+    console.log(requestBody);
 
-    return res.json({'added':'temp'})
+    return res.json({'added':requestBody})
 
 });
 
 router.get('/:itemName', (req, res) => {
 
-    const requestParameters = req.params;
-    return res.json();
+    const selectedItem = findItem(req.params.itemName);
+
+    if (selectedItem == undefined)
+        return res.status(404).send('404');
+        // no errors for this application, not in spec.
+        // start thinking about how to do logical middleware in the middle of an applicaotin: ask CG
+
+    return res.json(selectedItem);
 
 });
 
 router.patch('/:itemName', (req, res) => {
 
+    const selectedItem = findItem(req.params.itemName);
+    
+    if (selectedItem == undefined)
+        return res.status(404).send('404');
+    
+    const requestBody = req.params.body;
+    console.log(requestBody);
 
-    return res.json({'updated':'temp'});
+    const itemIndex = findIndex(selectedItem.name);
+    console.log(itemIndex);
+
+    fakeItem[itemIndex].price = selectedItem.price;
+        // double check if updating the name is also valid
+
+    return res.json({'updated':fakeDB[itemIndex]});
 
 });
 
 router.delete('/:itemName', (req, res) => {
 
+    const selectedItem = findItem(req.params.itemName);
+    
+    if (selectedItem == undefined)
+        return res.status(404).send('404');
 
+    fakeDB = filterItem(selectedItem.name);
     return res.status(201).json({message:'deleted'});
 
 });

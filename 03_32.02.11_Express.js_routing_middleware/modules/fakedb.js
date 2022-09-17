@@ -10,10 +10,10 @@ global.items = [];
     }
 */
 
-global.items = [
+const items = [
 
     {
-        'name':'popsicle',
+        'name':'popSicle',
         'price':1.45
     },
     {

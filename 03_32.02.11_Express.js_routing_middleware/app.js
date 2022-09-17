@@ -23,4 +23,6 @@ app.get('/', (req, res) => {
     return res.send('index');
 });
 
-app.use('/item', itemRouter);
+app.use('/items', itemRouter);
+
+module.exports = app;
