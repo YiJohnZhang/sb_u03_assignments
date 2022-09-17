@@ -49,7 +49,7 @@ router.get('/:itemName', (req, res) => {
     if (selectedItem == undefined)
         return res.status(404).send('404');
         // no errors for this application, not in spec.
-        // start thinking about how to do logical middleware in the middle of an applicaotin: ask CG
+        // lmao just do a middleware checker ._.
 
     return res.json(selectedItem);
 
