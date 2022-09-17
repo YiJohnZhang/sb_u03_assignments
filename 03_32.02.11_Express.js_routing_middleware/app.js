@@ -5,7 +5,6 @@ const morgan = require('morgan');
 
 //  Module(s)
 //  =========
-const fakeDB = require('./modules/fakedb');
 const itemRouter = require(`./modules/routerItem`);
 
 //  Setting(s)
@@ -21,8 +20,7 @@ const PORT_NUMBER = 3000;
 //  Routing
 //  =======
 app.get('/', (req, res) => {
-    return res.send(fakeDB);
-})
+    return res.send('index');
+});
 
-
-app.listen(PORT_NUMBER);
+app.use('/item', itemRouter);
