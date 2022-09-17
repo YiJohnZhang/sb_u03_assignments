@@ -35,10 +35,10 @@ router.get('/', (req, res) => {
 
 router.post('/', (req, res) => {
 
-    const requestBody = req.params.body;
+    const requestBody = req.body;
     console.log(requestBody);
 
-    return res.json({'added':requestBody})
+    return res.json({'added':'asdf'})
 
 });
 
@@ -62,7 +62,7 @@ router.patch('/:itemName', (req, res) => {
     if (selectedItem == undefined)
         return res.status(404).send('404');
     
-    const requestBody = req.params.body;
+    const requestBody = req.body;
     console.log(requestBody);
 
     const itemIndex = findIndex(selectedItem.name);

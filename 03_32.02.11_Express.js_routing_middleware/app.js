@@ -12,6 +12,7 @@ const itemRouter = require(`./modules/routerItem`);
 app = express();
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(express.urlencoded({extended:true}));
 
 //  Environment Variable(s) & Constant(s)
 //  ====================================
