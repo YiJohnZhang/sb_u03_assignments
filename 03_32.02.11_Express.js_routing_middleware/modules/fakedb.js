@@ -10,7 +10,7 @@ global.items = [];
     }
 */
 
-const items = [
+let items = [
 
     {
         'name':'popSicle',
