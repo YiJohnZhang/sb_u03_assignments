@@ -125,6 +125,7 @@ describe(`test '\`/items/:itemName\` for 'itemName'='popsicle'`, () => {
             .send(NEW_POPSICLE_ITEM);
 
         expect(response.statusCode).toBe(200);
+        console.log(response.body)
         expect(response.body).toStrictEqual({'updated':NEW_POPSICLE_ITEM});
         expect(fakeDB).toStrictEqual(
             [
@@ -144,7 +145,8 @@ describe(`test '\`/items/:itemName\` for 'itemName'='popsicle'`, () => {
             .delete(TEST_PATH);
 
         expect(response.statusCode).toBe(204);
-        // expect(fakeDB.length).toBe(1);
+        console.log(response);
+            // for some reason response.body is undefined in this.
         expect(response.body).toBe({'message':'deleted'});
         expect(fakeDB.length).toBe(1);
 
