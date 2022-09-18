@@ -1,8 +1,8 @@
 process.env.NODE_ENV = 'TEST';
-const request = require('supertest');
+const supertest = require('supertest');
 
 const app = require('./app');
-let initFakeDBState = require('./modules/fakedb');
+let fakeDB = require('./modules/fakedb');
 
 beforeAll(() => {
 
@@ -20,8 +20,6 @@ afterAll(() => {
  
 afterEach(() => {
 
-    fakeDB = initFakeDBState;
-
 });
 
 describe('GET & POST to `/items` ', () => {
@@ -37,7 +35,7 @@ describe('GET & POST to `/items` ', () => {
 
     test(`GET \`${TEST_PATH}\``, async() => {
 
-        const response = await request(app)
+        const response = await supertest(app)
             .get(TEST_PATH);
 
         // console.log(response.body.length);
@@ -53,7 +51,7 @@ describe('GET & POST to `/items` ', () => {
 
         const NEW_OBJECT = {'name':'asdf', 'price':4.29}
 
-        const response = await request(app)
+        const response = await supertest(app)
             .post(TEST_PATH)
             .send(NEW_OBJECT);
 
@@ -73,7 +71,7 @@ describe(`test '\`/items/:itemName\` for 'itemName'='popsiCles'`, () => {
 
     test(`GET \`${TEST_PATH}\``, async() =>{
 
-        const response = await request(app)
+        const response = await supertest(app)
             .get(TEST_PATH);
 
         expect(response.statusCode).toBe(404);
@@ -82,7 +80,7 @@ describe(`test '\`/items/:itemName\` for 'itemName'='popsiCles'`, () => {
 
     test(`PATCH \`${TEST_PATH}\``, async() =>{
 
-        const response = await request(app)
+        const response = await supertest(app)
             .patch(TEST_PATH);
 
         expect(response.statusCode).toBe(404);
@@ -91,7 +89,7 @@ describe(`test '\`/items/:itemName\` for 'itemName'='popsiCles'`, () => {
 
     test(`DELETE \`${TEST_PATH}\``, async() =>{
 
-        const response = await request(app)
+        const response = await supertest(app)
             .delete(TEST_PATH);
 
         expect(response.statusCode).toBe(404);
@@ -105,12 +103,12 @@ describe(`test '\`/items/:itemName\` for 'itemName'='popsicle'`, () => {
     const ITEM_NAME = 'popsicle';
     const TEST_PATH = `/items/${ITEM_NAME}`;
 
-    const POPSICLE_ITEM = initFakeDBState[0];
+    const POPSICLE_ITEM = fakeDB[0];
     const NEW_POPSICLE_ITEM = {'name':'popsiclE', 'price':5.60};
 
     test(`GET \`${TEST_PATH}\``, async() =>{
 
-        const response = await request(app)
+        const response = await supertest(app)
             .get(TEST_PATH);
 
         expect(response.statusCode).toBe(200);
@@ -120,12 +118,11 @@ describe(`test '\`/items/:itemName\` for 'itemName'='popsicle'`, () => {
 
     test(`PATCH \`${TEST_PATH}\``, async() =>{
 
-        const response = await request(app)
+        const response = await supertest(app)
             .patch(TEST_PATH)
             .send(NEW_POPSICLE_ITEM);
 
         expect(response.statusCode).toBe(200);
-        console.log(response.body)
         expect(response.body).toStrictEqual({'updated':NEW_POPSICLE_ITEM});
         expect(fakeDB).toStrictEqual(
             [
@@ -141,14 +138,16 @@ describe(`test '\`/items/:itemName\` for 'itemName'='popsicle'`, () => {
 
     test(`DELETE \`${TEST_PATH}\``, async() =>{
 
-        const response = await request(app)
+        const response = await supertest(app)
             .delete(TEST_PATH);
 
-        expect(response.statusCode).toBe(204);
-        console.log(response);
-            // for some reason response.body is undefined in this.
-        expect(response.body).toBe({'message':'deleted'});
+        expect(response.statusCode).toBe(200);
+            // apparently a status code of 204 doesn't allow a custom message ._.
+        console.log(fakeDB)
         expect(fakeDB.length).toBe(1);
+        expect(response.body).toStrictEqual({'message':'Deleted'});
+        // console.log(response);
+            // for some reason response.body is undefined for a status code of 204.
 
     });
     

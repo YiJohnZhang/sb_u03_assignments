@@ -89,10 +89,17 @@ router.delete('/:itemName', (req, res) => {
     
     if (selectedItemIndex == -1)
         return res.status(404).send('404');
+    
+    // const shallowFilterDB = filterItemIndex(selectedItemIndex);
+    // fakeDB = shallowFilterDB;
+    // console.log(shallowFilterDB)
+    // console.log(fakeDB)
 
-    fakeDB = filterItemIndex(selectedItemIndex);
-    console.log(fakeDB);
-    return res.status(204).json({'message':'deleted'});
+    fakeDB.splice(selectedItemIndex, 1);
+
+    // return res.status(204).json({'message':'Deleted'});
+        // apparently the status code 204 messes it up; woo hoo 1 hour down the drain without knowing why
+    return res.json({'message':'Deleted'});
 
 });
 
