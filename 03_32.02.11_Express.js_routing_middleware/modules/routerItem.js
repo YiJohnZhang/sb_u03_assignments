@@ -54,24 +54,17 @@ router.post('/', (req, res) => {
 
 });
 
-router.get('/:itemName', (req, res) => {
+router.get('/:itemName', itemSearchMiddleware, (req, res) => {
 
-    const selectedItemIndex = findItemIndex(req.params.itemName);
-
-    if (selectedItemIndex == -1)
-        return res.status(404).send('404');
-        // no errors for this application, not in spec.
+    const selectedItemIndex = res.locals.selectedItemIndex;
 
     return res.json(fakeDB[selectedItemIndex]);
 
 });
 
-router.patch('/:itemName', (req, res) => {
+router.patch('/:itemName', itemSearchMiddleware, (req, res) => {
 
-    const selectedItemIndex = findItemIndex(req.params.itemName);
-    
-    if (selectedItemIndex == -1)
-        return res.status(404).send('404');
+    const selectedItemIndex = res.locals.selectedItemIndex;
     
     const requestBody = req.body;
 
@@ -83,12 +76,9 @@ router.patch('/:itemName', (req, res) => {
 
 });
 
-router.delete('/:itemName', (req, res) => {
+router.delete('/:itemName', itemSearchMiddleware, (req, res) => {
 
-    const selectedItemIndex = findItemIndex(req.params.itemName);
-    
-    if (selectedItemIndex == -1)
-        return res.status(404).send('404');
+    const selectedItemIndex = res.locals.selectedItemIndex;
     
     // const shallowFilterDB = filterItemIndex(selectedItemIndex);
     // fakeDB = shallowFilterDB;
