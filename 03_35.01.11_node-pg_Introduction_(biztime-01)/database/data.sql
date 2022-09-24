@@ -1,10 +1,10 @@
-\c "sb_35.01.11_biztime"
+\c sb_35_01_11_biztime
 
 DROP TABLE IF EXISTS invoices;
 DROP TABLE IF EXISTS companies;
 
 CREATE TABLE companies (
-    code text PRIMARY KEY,
+    code text PRIMARY KEY NOT NULL,
     name text NOT NULL UNIQUE,
     description text
 );
