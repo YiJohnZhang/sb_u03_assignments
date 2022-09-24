@@ -5,13 +5,12 @@
  */
 
 class ExpressError extends Error {
-  constructor(message, status) {
+  constructor(status, message=undefined) {
     super();
-    this.message = message;
     this.status = status;
+    this.message = message;
     console.error(this.stack);
   }
 }
-
 
 module.exports = ExpressError;

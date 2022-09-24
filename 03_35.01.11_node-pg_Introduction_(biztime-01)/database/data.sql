@@ -1,4 +1,4 @@
-\c biztime
+\c "sb_35.01.11_biztime"
 
 DROP TABLE IF EXISTS invoices;
 DROP TABLE IF EXISTS companies;
