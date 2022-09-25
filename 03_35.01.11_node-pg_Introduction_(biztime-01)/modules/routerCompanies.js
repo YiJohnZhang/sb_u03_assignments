@@ -5,6 +5,7 @@ const router = new express.Router();
 
 //  Module(s)
 //  =========
+const db = require('../database/db');
 const {Companies} = require('../models');
 const ExpressError = require('./classExpressError');
 const {requestCompaniesResourceExists} = require('./middlewareValidation');
@@ -32,7 +33,19 @@ router.get('/:code', async(req, res, nxt) => {
 
     try{
         
-        const result = await Companies.returnModelByPK(req.params.companyCode);
+        let result = await Companies.returnModelByPK(req.params.code);
+        
+        const invoiceResult = await db.query(`
+            SELECT id
+            FROM invoices
+            WHERE comp_code = $1
+        `, [req.params.code])
+
+        const invoiceArrayList = invoiceResult.rows.map((rowElement) => rowElement.id);
+        
+        result.invoices = invoiceArrayList;
+            // i need a better error-handling system, i.e. for the 'graceful404', maybe I return "error: {"status":..., "message":...}"?
+        
         return res.json({company: result})
 
     }catch(error){
