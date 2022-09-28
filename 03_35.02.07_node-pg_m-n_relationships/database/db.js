@@ -1,7 +1,7 @@
 /** Database setup for BizTime. */
 const {Client} = require('pg');
 
-const DB_URI = process.env.NODE_ENV === 'TEST' ? 'postgresql:///sb_35_01_11_test' : 'postgresql:///sb_35_01_11';
+const DB_URI = process.env.NODE_ENV === 'TEST' ? 'postgresql:///sb_35_02_07_test' : 'postgresql:///sb_35_02_07';
 // postgres://[postgresUsername][:postgresPassword][@localhost][:postgresPortNumber, usually 5432]/databaseName
 
 const db = new Client(DB_URI);

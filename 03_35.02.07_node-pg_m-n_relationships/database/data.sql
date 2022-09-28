@@ -1,4 +1,4 @@
-\c sb_35_01_11
+\c sb_35_02_07
 
 DROP TABLE IF EXISTS invoices;
 DROP TABLE IF EXISTS companies;

@@ -68,7 +68,6 @@ router.post('/', async(req, res, nxt) => {
             // figure out a way to automate destructuring
 
         const newCompany = new Companies(kwargsInitializeObject = companyObject);
-
         const result = await newCompany.createDatabaseEntry(returnJSON = true);
         return res.status(201).json({company:result});
 
@@ -83,7 +82,7 @@ router.put('/:code', requestCompaniesResourceExists,
 
     try{
 
-        const newCompanyObject = new Companies(kwargsInitializeObject = req.body)
+        const newCompanyObject = new Companies(kwargsInitializeObject = req.body);
         const result = await newCompanyObject.updateDatabaseEntry(returnJSON = true);
 
         return res.json({company:result});
