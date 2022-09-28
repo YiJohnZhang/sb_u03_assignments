@@ -1,7 +1,7 @@
 //  Module(s)
 //  =========
 const db = require('../database/db');
-const {Companies} = require('../models');
+const {Companies, Invoices} = require('../models');
 const ExpressError = require('./classExpressError');
 
 //  Environment Variable(s) & Constant(s)
@@ -22,11 +22,9 @@ const requestCompaniesResourceExists = async(req, res, nxt) => {
 
 const requestInvoicesResourceExists = async(req, res, nxt) => {
 
-    const objectExists = await db.query(`
-        SELECT id FROM invoices WHERE id = $1
-    `, [req.params.id]);
+    const objectExists = await Invoices.confirmModelByPK(req.params.id);
 
-    if(objectExists.rows[0])
+    if(objectExists)
         nxt();
     else
         nxt(new ExpressError(404));

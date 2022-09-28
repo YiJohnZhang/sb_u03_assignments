@@ -6,9 +6,9 @@ const router = new express.Router();
 //  Module(s)
 //  =========
 const db = require('../database/db');
-const {Companies} = require('../models');
+const {Companies, Invoices} = require('../models');
 const ExpressError = require('./classExpressError');
-const {requestCompaniesResourceExists, requestInvoicesResourceExists} = require('./middlewareValidation');
+const {requestInvoicesResourceExists} = require('./middlewareValidation');
 
 //  Environment Variable(s) & Constant(s)
 //  =====================================
@@ -20,14 +20,13 @@ router.get('/', async(req, res, nxt) => {
 
     try{
 
-        const result = await db.query(`
-            SELECT id, comp_code
-            FROM invoices
-        `);
-
-        console.log(result);
-
-        return res.json({invoices: result.rows})
+        const result = await Invoices.returnAllModels();
+        /*  Test
+         *  const resultObject = await Invoices.returnAllModelsObject();
+         *  const stringRpr = resultObject.map((element) => element.__repr__());
+         *  console.log(stringRpr);
+         */
+        return res.json({invoices: result})
 
     }catch(error){
         nxt(error);
@@ -35,17 +34,11 @@ router.get('/', async(req, res, nxt) => {
 
 });
 
-router.get('/:id', async(req, res, nxt) => {
+router.get('/:id', requestInvoicesResourceExists, async(req, res, nxt) => {
 
     try{
         
-        const invoiceResult = await db.query(`
-            SELECT *
-            FROM invoices
-            WHERE id = $1
-        `, [req.params.id]);
-
-        let result = invoiceResult.rows[0];
+        const result = await Invoices.returnModelByPK(req.params.id);
 
         const companyResult = await Companies.returnModelByPK(result.comp_code);
         result.company = companyResult;
@@ -61,7 +54,7 @@ router.get('/:id', async(req, res, nxt) => {
 router.post('/', async(req, res, nxt) => {
 
     try{
-
+        
         const result = await db.query(`
             INSERT INTO invoices (comp_code, amt)
             VALUES($1, $2)
@@ -80,6 +73,7 @@ router.put('/:id', requestInvoicesResourceExists, async(req, res, nxt) => {
     
     try{
 
+        // custom logic
         const result = await db.query(`
             UPDATE invoices
             SET amt = $1
@@ -99,12 +93,9 @@ router.delete('/:id', requestInvoicesResourceExists, async(req, res, nxt) => {
 
     try{
 
-        const result = await db.query(`
-            DELETE FROM invoices
-            WHERE id = $1
-        `, [req.params.id]);
+        const result = await Invoices.deleteModelByPK(req.params.id);
 
-        return res.json({status:'deleted'})
+        return res.json(result)
 
     }catch(error){
         nxt(error);
