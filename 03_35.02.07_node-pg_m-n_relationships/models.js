@@ -6,7 +6,15 @@ const ExpressError = require('./modules/classExpressError');
 const {RESPONSE_MESSAGE_MAPPING} = require('./modules/CONSTANTS')
 
 class Model{
-    // stopgap implementation: each of the calling methods must be overridden because the default will raise an error of "implementation required"
+    /*  stopgap implementation: each of the calling methods must be overridden because the default will raise an error of "implementation required" for:
+     *      - constructor()
+     *      - validateConstructedObject()
+     *      *- __repr__()    => only for debugging
+     *      - static destructureObjectProperties()
+     *      - static confirmModelByPK()
+     *      - static returnModelByPK()
+     *      - static deleteModelByPK()
+     */     
     static relationName;
     constructor(relationName){
         this.constructor.relationName = relationName;   // this is introducing a 'relationName' column
