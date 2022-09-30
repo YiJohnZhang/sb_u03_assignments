@@ -6,7 +6,7 @@ const router = new express.Router();
 //  Module(s)
 //  =========
 const db = require('../database/db');
-const {Companies} = require('../models');
+const {Companies, Industries, JoinCompaniesIndustries} = require('../models');
 const ExpressError = require('./classExpressError');
 const {requestCompaniesResourceExists} = require('./middlewareValidation');
 
@@ -41,11 +41,18 @@ router.get('/:code', async(req, res, nxt) => {
             WHERE comp_code = $1
         `, [req.params.code])
 
+        const industriesResult = await JoinCompaniesIndustries.returnModelsByCompany(req.params.code);
+        const industriesPromiseMapping = await Promise.all(
+            industriesResult.map(async(rowElement) => await Industries.returnModelByPK(rowElement.industries_code))
+            );
+
         const invoiceArrayList = invoiceResult.rows.map((rowElement) => rowElement.id);
         
         result.invoices = invoiceArrayList;
+        result.industries = industriesPromiseMapping.map((element) => element.industry_field);
             // i need a better error-handling system, i.e. for the 'graceful404', maybe I return "error: {"status":..., "message":...}"?
-        
+            // ok. I am so done with this assignment.
+
         return res.json({company: result})
 
     }catch(error){
@@ -65,12 +72,10 @@ router.post('/', async(req, res, nxt) => {
             description: req.body.description
 
         }
-            // figure out a way to automate destructuring
 
-        const newCompany = new Companies(kwargsInitializeObject = req.body);
-        console.log(newCompany)
+        const newCompany = new Companies(kwargsObjectParameters = companyObject);
         const result = await newCompany.createDatabaseEntry(returnJSON = true);
-        console.log(newCompany)
+        
         return res.status(201).json({company:result});
 
     }catch(error){
@@ -108,6 +113,5 @@ router.delete('/:code', requestCompaniesResourceExists,
     }
 
 });
-
 
 module.exports = router;

@@ -22,8 +22,8 @@ class Model{
 
     __repr__(){
         // Self-representation of an instance of this class.
-        // Pattern:
-        // 
+        //  Pattern:
+        //      return `<${this.constructor.relationName} ${this.primaryKey}: ${this.propertyOne}>`;
         throw new Error('Method \'__repr__()\' must be implemented.');
     }
 
@@ -104,7 +104,7 @@ class Model{
         const destructuredObjectProperties = this.destructureObjectProperties(modelObject, operation);
             //  - destructuredObjectProperties.primaryObjectProperties: Immutable properties, primary keys.
             //  - destructuredObjectProperties.mutableObjectProperties: Mutable properties, other properties.
-
+ 
         const mutableObjectKeys = Object.keys(destructuredObjectProperties.mutableObjectProperties);
         const mutableObjectValues = Object.values(destructuredObjectProperties.mutableObjectProperties);
         
@@ -141,7 +141,7 @@ class Model{
                 // RETURNING pk only because it may return columns with sensitive data
                 // const queryArgumentLength = queryArguments.length;
         }
-
+        
         return db.query(queryString, queryParameters);
     }
 
@@ -191,13 +191,13 @@ class Model{
 
     static async returnModelObjectByPK(primaryKey) {
         // Returns a model by PK in the database, developed with intention for updating. Gracefully returns false if DNE.
-        
+
         const modelParameters = await this.returnModelByPK(primaryKey);
         
         if(!modelParameters)
             return modelParameters;   // `false`
 
-        return new this(kwargsInitializeObject = modelParameters);
+        return new this(modelParameters);
     }
 
     static async returnAllModels() {
@@ -262,9 +262,9 @@ class Model{
         // if(objectExists)
         //     throw new ExpressError('409alreadyExists');
         //     // do a helper method to handle postgres errors
-        
+
         const result = await this.constructor.splatCreateUpdateHelper(this, 'create');
-        
+
         if(returnJSON)
             return result.rows[0];
 
@@ -273,9 +273,9 @@ class Model{
 
     async updateDatabaseEntry(returnJSON = false){
         // Commit changes to object. Use only after middleware confirming existence.
-
+        
         const result = await this.constructor.splatCreateUpdateHelper(this, 'update');
-
+        
         if(returnJSON)
             return result.rows[0];
 
@@ -480,14 +480,7 @@ class Invoices extends Model{
          *      - destructureObjectProperties(...).mutableObjectProperties: Mutable properties, other properties.
          */
 
-        if(operation == 'create'){
-            // primaryObjectProperties = ;
-            var {mutableObjectProperties} = modelObject;
-        }else if(operation == 'update'){
-            var {code, ...mutableObjectProperties} = modelObject;
-            // var {code:primaryObjectProperties, ...mutableObjectProperties} is non-general for composite key objects. probably do a .map() to assign to an array if I decide to build an object to store all model properties
-        }
-
+        const {id, ...mutableObjectProperties} = modelObject;
         return {
             primaryObjectProperties: {id: modelObject.id},
             mutableObjectProperties
@@ -534,7 +527,7 @@ class Invoices extends Model{
             
                 return this.gracefulModel404(result.rows[0]);
             */
-
+        
         const result = await db.query(
             `SELECT *
             FROM ${this.relationName}
@@ -567,6 +560,37 @@ class Invoices extends Model{
 
     }
 
+    handlePaymentLogic(paymentParameters){
+
+        console.log('---')
+        const {paid, amt} = paymentParameters;
+
+        if(this.amt !== null || this.amt !== undefined)
+            this.amt = amt;
+
+        if (this.paid){
+            // current state is paid
+
+            if(paid == false){
+                // set `paid_date` to null
+                this.paid = false;
+                this.paid_date = null;
+
+            }
+
+            // otherwise do nothing else.
+
+        }else{
+            // current state is not paid
+            const date = new Date();
+            this.paid_date = date;
+            this.paid = true;
+        }
+
+        return this.updateDatabaseEntry(true);
+        
+    }
+
     // ...
 
 }
@@ -575,7 +599,7 @@ class Industries extends Model{
 
     static relationName = 'industries';
 
-    constructor(kwargObjectParameters = undefined, industry_field, code){
+    constructor(kwargObjectParameters = undefined, code = null, industry_field = null){
         
         super(Industries.relationName);
 
@@ -583,33 +607,32 @@ class Industries extends Model{
             Object.assign(this, kwargObjectParameters);
         }else{
 
-            this.constructor.validateConstructedObject(industry_field, code);
+            this.constructor.validateConstructedObject(code, industry_field);
             this.industry_field = industry_field;
             this.code = code;
 
         }
 
-        this.constructor.validateConstructedObject(this.industry_field, this.code);
+        this.constructor.validateConstructedObject(this.code, this.industry_field);
 
     }
 
-    static validateConstructedObject(industry_field, code){
-        // properties that cannot be null
-        
-        // note: (typeof code === 'null' || 'undefined') is `undefined`
-        if(industry_field === null || industry_field === undefined || industry_field === '')
-        throw new Error('Industries \'industry_field\' cannot be empty or null.');
+    static validateConstructedObject(code, industry_field){
+        // Properties that cannot be null
 
         if(code === null || code === undefined || code === '')
-            throw new Error('Industries \'code\' cannot be empty or null.');
+            throw new Error('Invoices \'code\' cannot be empty or null.');
 
+        if(industry_field === null || industry_field === undefined || industry_field === '')
+            throw new Error('Invoices \'industry_field\' cannot be empty or null.');
+        
         return;
 
     }
 
     __repr__(){
         // Self-representation of an instance of this class.
-        return `<${this.constructor.relationName} ${this.industry_field}: ${this.code}>`;
+        return `<${this.constructor.relationName} ${this.code}: ${this.industry_field}>`;
     }
 
     static destructureObjectProperties(modelObject, operation){
@@ -621,19 +644,19 @@ class Industries extends Model{
 
         if(operation == 'create'){
             // primaryObjectProperties = ;
-            var {mutableObjectProperties} = modelObject;
+            var {...mutableObjectProperties} = modelObject;
         }else if(operation == 'update'){
-            var {industry_field, ...mutableObjectProperties} = modelObject;
+            var {...mutableObjectProperties} = modelObject;
             // var {code:primaryObjectProperties, ...mutableObjectProperties} is non-general for composite key objects. probably do a .map() to assign to an array if I decide to build an object to store all model properties
         }
 
         return {
-            primaryObjectProperties: {industry_field: modelObject.industry_field},
+            primaryObjectProperties,
             mutableObjectProperties
         }
 
     }
-    
+
     static async confirmModelByPK(primaryKey){
         // Only confirm whether or not the primary key exists in the database to prevent returning sensitive information. Intended for middleware to validate existence.
             /*  pattern:
@@ -650,9 +673,9 @@ class Industries extends Model{
             */
 
         const result = await db.query(
-            `SELECT industry_field
+            `SELECT code
             FROM ${this.relationName}
-            WHERE industry_field = $1`,
+            WHERE code = $1`,
             [primaryKey]);
         
         if(result.rows[0] === undefined)
@@ -673,13 +696,13 @@ class Industries extends Model{
             
                 return this.gracefulModel404(result.rows[0]);
             */
-
+           
         const result = await db.query(
             `SELECT *
             FROM ${this.relationName}
-            WHERE industry_field = $1`,
+            WHERE code = $1`,
             [primaryKey]);
-            // PRIMARY KEY = $1
+                // TO DO: (industry_field, code)
         
         return this.gracefulModel404(result.rows[0]);
         
@@ -698,7 +721,7 @@ class Industries extends Model{
 
         const result = await db.query(
             `DELETE FROM ${this.relationName}
-            WHERE industry_field = $1`,
+            WHERE industry_field = $1 AND code = $2`,
             [primaryKey]);
             // PRIMARY KEY = $1
         
@@ -707,11 +730,130 @@ class Industries extends Model{
     }
 
     // need to add a joint industry, company method
+    // Instance Methods
+    async createDatabaseEntry(returnJSON = false){
+        // Create database entry.
+        // 2022-09-25: Ideally this would be a class method; maybe once I figure out a form module.
+
+        // const objectExists = await this.constructor.confirmModelByPK(this.code);
+        // if(objectExists)
+        //     throw new ExpressError('409alreadyExists');
+        //     // do a helper method to handle postgres errors
+
+        const result = await db.query(
+            `INSERT INTO ${this.constructor.relationName} (code, industry_field)
+                VALUES ($1, $2)
+                RETURNING *`,
+                [this.code, this.industry_field]);
+                // TO DO: (industry_field, code)
+
+        if(returnJSON)
+            return result.rows[0];
+
+        return;
+    }
 
 }
+
+class JoinCompaniesIndustries extends Model{
+
+    static relationName = 'companies_industries_join';
+
+    constructor(kwargObjectParameters = undefined, industries_code, company_code){
+
+        super(JoinCompaniesIndustries.relationName);
+
+        if(kwargObjectParameters){
+            Object.assign(this, kwargObjectParameters);
+        }else{
+
+            this.constructor.validateConstructedObject(industries_code, company_code);
+            this.industries_code = industries_code;       // model-side nullable company_code key
+            this.company_code = company_code;
+
+        }
+
+        this.constructor.validateConstructedObject(this.industries_code, this.company_code);
+
+    }
+
+    static validateConstructedObject(industries_code, company_code){
+        // Properties that cannot be null
+
+        if(industries_code === null || industries_code === undefined || industries_code === '')
+            throw new Error('companies_industries_join \'industries_code\' cannot be empty or null.');
+        
+        if(company_code === null || company_code === undefined || company_code === '')
+            throw new Error('companies_industries_join \'company_code\' cannot be empty or null.');
+        
+        return;
+
+    }
+
+    __repr__(){
+        // Self-representation of an instance of this class.
+        return `<${this.constructor.relationName} (${this.industries_code}, ${this.company_code})>`;
+    }
+
+    static async returnModelByPK(industries_code, company_code){
+
+        if (industries_code === null || industries_code === undefined || company_code === null || company_code === undefined)
+            throw new Error('Invalid parameters.');
+        
+        const result = await db.query(
+            `SELECT *
+            FROM ${this.relationName}
+            WHERE industries_code = $1 AND company_code = $2`,
+            [industries_code, company_code]);
+    
+        return result.rows[0];
+
+    }
+
+    static async returnModelsByCompany(company_code){
+
+        // no need to check for empty strings since the database will always return no results.
+        if (company_code === null || company_code === undefined)
+            throw new Error('Invalid parameters.');
+        
+        const result = await db.query(
+            `SELECT *
+            FROM ${this.relationName}
+            WHERE company_code = $1`,
+            [company_code]);
+    
+        return result.rows;
+
+    }
+
+    // Instance Methods
+    async createDatabaseEntry(returnJSON = false){
+        // Create database entry.
+        // 2022-09-25: Ideally this would be a class method; maybe once I figure out a form module.
+
+        // const objectExists = await this.constructor.confirmModelByPK(this.code);
+        // if(objectExists)
+        //     throw new ExpressError('409alreadyExists');
+        //     // do a helper method to handle postgres errors
+
+        const result = await db.query(`
+            INSERT INTO ${this.constructor.relationName} (industries_code, company_code)
+            VALUES ($1, $2)
+            RETURNING *`,
+            [this.industries_code, this.company_code]);
+
+        if(returnJSON)
+            return result.rows[0];
+
+        return;
+    }
+
+}
+
 
 module.exports = {
     Companies,
     Invoices, 
-    Industries
+    Industries,
+    JoinCompaniesIndustries
 };

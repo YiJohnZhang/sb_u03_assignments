@@ -12,15 +12,17 @@ app.use(morgan('dev'), express.json());
 //  =========
 const companiesRouter = require('./modules/routerCompanies');
 const invoicesRouter = require('./modules/routerInvoices');
+const industriesRouter = require('./modules/routerIndustries');
 const ExpressError = require("./modules/classExpressError");
 const db = require('./database/db');
 
 //  Environment Variable(s) & Constant(s)
 //  =====================================
-const {RESPONSE_MESSAGE_MAPPING} = require('./modules/CONSTANTS')
+const {RESPONSE_MESSAGE_MAPPING} = require('./modules/CONSTANTS');
 
 app.use('/companies', companiesRouter);
 app.use('/invoices', invoicesRouter);
+app.use('/industries', industriesRouter);
 
 /** 404 handler */
 app.use(function(req, res, next) {

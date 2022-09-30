@@ -5,7 +5,6 @@ const router = new express.Router();
 
 //  Module(s)
 //  =========
-const db = require('../database/db');
 const {Companies, Invoices} = require('../models');
 const ExpressError = require('./classExpressError');
 const {requestInvoicesResourceExists} = require('./middlewareValidation');
@@ -54,14 +53,12 @@ router.get('/:id', requestInvoicesResourceExists, async(req, res, nxt) => {
 router.post('/', async(req, res, nxt) => {
 
     try{
-        
-        const result = await db.query(`
-            INSERT INTO invoices (comp_code, amt)
-            VALUES($1, $2)
-            RETURNING *
-        `, [req.body.comp_code, req.body.amt]);
 
-        return res.status(201).json({invoice: result.rows[0]});
+        const invoiceObject = req.body;
+        const newInvoice = new Invoices(kwargsObjectParameters = invoiceObject);
+        const result = await newInvoice.createDatabaseEntry(returnJSON = true);
+        
+        return res.status(201).json({invoice: result});
 
     }catch(error){
         nxt(error);
@@ -73,15 +70,10 @@ router.put('/:id', requestInvoicesResourceExists, async(req, res, nxt) => {
     
     try{
 
-        // custom logic
-        const result = await db.query(`
-            UPDATE invoices
-            SET amt = $1
-            WHERE id = $2
-            RETURNING *
-        `, [req.body.amt, req.params.id]);
-        
-        return res.json({invoice: result.rows[0]})
+        let selectedInvoiceObject = await Invoices.returnModelObjectByPK(req.params.id);
+        const result = await selectedInvoiceObject.handlePaymentLogic(req.body);
+
+        return res.json({invoice: result});
 
     }catch(error){
         nxt(error);
@@ -102,6 +94,5 @@ router.delete('/:id', requestInvoicesResourceExists, async(req, res, nxt) => {
     }
 
 });
-
 
 module.exports = router;
