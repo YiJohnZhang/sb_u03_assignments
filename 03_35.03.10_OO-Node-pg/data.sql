@@ -1,4 +1,4 @@
-\c lunchly 
+\c sb_35_03_10_lunchly 
 
 DROP TABLE IF EXISTS reservations;
 DROP TABLE IF EXISTS customers;
