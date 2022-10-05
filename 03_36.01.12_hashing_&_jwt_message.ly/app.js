@@ -3,9 +3,9 @@
 
 const express = require("express");
 const cors = require("cors");
-const { authenticateJWT } = require("./middleware/auth");
+const { authenticateJWT } = require("./modules/middlewareAuth");
 
-const ExpressError = require("./expressError")
+const {ExpressError} = require("./modules/utilities")
 const app = express();
 
 // allow both form-encoded and json body parsing
@@ -20,9 +20,9 @@ app.use(authenticateJWT);
 
 /** routes */
 
-const authRoutes = require("./routes/auth");
-const userRoutes = require("./routes/users");
-const messageRoutes = require("./routes/messages");
+const authRoutes = require("./modules/routerAuth");
+const userRoutes = require("./modules/routerUsers");
+const messageRoutes = require("./modules/routerMessages");
 
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);

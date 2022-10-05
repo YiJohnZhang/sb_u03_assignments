@@ -1,9 +1,7 @@
-/** Server startup for Message.ly. */
+  /** Starts the server.
+	*/
 
-
-const app = require("./app");
-
-
-app.listen(3000, function () {
-  console.log("Listening on 3000");
-});
+const app = require('./app');
+const {PORT_NUMBER} = require('./config') 
+	
+app.listen(PORT_NUMBER);
