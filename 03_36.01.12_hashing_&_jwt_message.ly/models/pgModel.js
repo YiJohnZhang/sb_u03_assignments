@@ -33,6 +33,10 @@ const dbClient = require('../database/db');
 const {RESPONSE_MESSAGE_MAPPING, ExpressError} = require('../modules/utilities')
 
 class Model{
+	/*	Base class for pgModel.js
+	 *	To use this define a class and extend the alias assigned for `Model`. See 'Subclass Boilerplate' for the current version's unimplemented methods.
+	 *	Contains general methods for the basic instance of itself.
+	 */
 	
 	static relationName;
 
