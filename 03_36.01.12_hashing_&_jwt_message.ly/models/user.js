@@ -93,10 +93,10 @@ class User extends Model{
 	 *	returns {username, first_name, last_name, phone, join_at, last_login_at } */	
 		const result = await dbClient.query(
 			`SELECT username, first_name, last_name, phone, join_at, last_login_at
-			FROM ${this.relationName}
-			WHERE username = $1`,
+				FROM ${this.relationName}
+				WHERE username = $1`,
 			[username]);
-	
+			
 		return result.rows[0];
 
 	}
@@ -118,9 +118,8 @@ class User extends Model{
 		const result = await dbClient.query(
 			`INSERT INTO users(username, password, first_name, last_name, phone)
 				VALUES($1, $2, $3, $4, $5)
-				RETURNING *
-			`, [username, password, first_name, last_name, phone]
-		);
+				RETURNING *`,
+			[username, password, first_name, last_name, phone]);
 		
 		return result.rows[0];		
 
@@ -132,12 +131,30 @@ class User extends Model{
 		 * Returns boolean.
 		 */
 		
+		// **Note**: there is no bcrypt in this one
+		const result = await dbClient.query(
+			`SELECT password
+			FROM users
+			WHERE username = $1`,
+		[username]);
+		
+		const returnedPassword = result.rows[0].password;
+
+		return returnedPassword === password;
 		
 	}
 	
 	static async updateLoginTimestamp(username) {
 		/** Update last_login_at for user */
-	
+
+		const result = await dbClient.query(
+			`UPDATE ${this.relationName}
+				SET last_login_at = $1
+				WHERE USERNAME = $2`,
+			[new Date, username]);
+		
+			return;
+
 	}
 
 	static async messagesFrom(username) {
@@ -148,40 +165,100 @@ class User extends Model{
 	 *	where to_user is
 	 *		{username, first_name, last_name, phone}
 	 */
-		const messageResult = await dbClient.query(`
-			SELECT from_username, body, sent_at, read_at
-			FROM messages
-			WHERE to_username = $1
-		`,[username]);
+		// apparently in the tests, it tells you to also add the sender (from_user details). Apparently the tests specify **NOT** to return `to_username`
+		const messageResult = await dbClient.query(
+			`SELECT id, to_username, body, sent_at, read_at
+				FROM messages
+				WHERE from_username = $1
+			`,[username]);
 
-		messageArray = messageResult.rows;
+		const messageArray = messageResult.rows;
 
 		// build array of Promises
 		let userPromises = [];
 		messageArray.forEach((messageEntry) => {
+
 			const userResult = dbClient.query(`
 				SELECT username, first_name, last_name, phone
-				FROM users
-				WHERE username = $1
-			`,[messageEntry.from_username]);
+					FROM users
+					WHERE username = $1
+				`,[messageEntry['to_username']]);
 
 			userPromises.push(userResult);
 		});
 
 		const userResults = await Promise.all(userPromises);
-		console.log(userResults);
+		// console.log(userResults[0].rows[0])
 
-		
+		// const resultArray = messageArray.map((messageElement, index) => { messageElement, to_user = userResults[index].rows[0]});
+		let resultArray = [];
+		messageArray.forEach((messageElement, index) => {
+			
+			delete messageElement['to_username'];
+			// console.log(messageElement)
+			// console.log(userResults[index].rows[0])
+
+			resultArray.push(
+				{
+					...messageElement,
+					to_user: userResults[index].rows[0]
+				}
+			);
+
+		});
+
+		return resultArray;
+
 	}
 
-	static async messagesTo(username) {
 	/*	Return messages to this user.
 	 *	
 	 *	[{id, from_username, body, sent_at, read_at}]
 	 *	
 	 *	where from_user is
 	 *   {username, first_name, last_name, phone}
-	 */	
+	 */
+	static async messagesTo(username) {
+
+		const messagesResult = await dbClient.query(`
+			SELECT id, from_username, body, sent_at, read_at
+				FROM messages
+				WHERE to_username = $1
+			`, [username]);
+		
+		// const messagesArray = (await messageResult).rows;
+		const messagesArray = messagesResult.rows;
+		
+		const userPromises = [];
+		messagesArray.forEach((messageElement) => {
+
+			const userResult = dbClient.query(`
+				SELECT username, first_name, last_name, phone
+					FROM users
+					WHERE username = $1
+				`, [messageElement['from_username']]);
+
+			userPromises.push(userResult);
+
+		});
+
+		const usersResult = await Promise.all(userPromises);
+
+		let resultArray = [];
+		messagesArray.forEach((messageElement, index) => {
+
+			delete messageElement.from_username;
+
+			resultArray.push(
+				{
+					...messageElement,
+					from_user: usersResult[index].rows[0]
+				}
+			);
+
+		});
+		
+		return resultArray;
 
 	}
 

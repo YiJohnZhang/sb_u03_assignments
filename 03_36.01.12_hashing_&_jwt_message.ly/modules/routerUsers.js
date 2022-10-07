@@ -12,7 +12,6 @@ router.get('/', async (req, res, nxt) => {
     try{
 
         const result = await User.all();
-        console.log(result);
         return res.json({users:result});
     
     }catch(error){

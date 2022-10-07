@@ -8,7 +8,7 @@ CREATE TABLE users (
     last_name text NOT NULL,
     phone text NOT NULL,
     join_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    last_login_at timestamp with time zone
+    last_login_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE messages (
