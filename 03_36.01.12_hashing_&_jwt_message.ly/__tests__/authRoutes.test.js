@@ -4,11 +4,13 @@ const jwt = require("jsonwebtoken");
 const app = require("../app");
 const db = require("../database/db");
 const User = require("../models/user");
+const { DB_URI } = require("../config");
 
 
 describe("Auth Routes Test", function () {
 
   beforeEach(async function () {
+
     await db.query("DELETE FROM messages");
     await db.query("DELETE FROM users");
 
@@ -65,7 +67,7 @@ describe("Auth Routes Test", function () {
       expect(response.statusCode).toEqual(400);
     });
 
-    test("won't login w/wrong password", async function () {
+    test("won't login w/wrong username", async function () {
       let response = await request(app)
         .post("/auth/login")
         .send({ username: "not-user", password: "password" });
@@ -75,5 +77,9 @@ describe("Auth Routes Test", function () {
 });
 
 afterAll(async function () {
+//     const postgresPool = new Pool(DB_URI)
+// const client = await postgresPool.connect()
+// await client.release()
+// await postgresPool.end()
   await db.end();
 });

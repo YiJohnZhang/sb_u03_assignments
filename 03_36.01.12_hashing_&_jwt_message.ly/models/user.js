@@ -1,4 +1,5 @@
 /** User class for message.ly */
+const { ExpressError } = require('../modules/utilities');
 const {Model, dbClient} = require('./pgModel');
 
 class User extends Model{
@@ -132,14 +133,18 @@ class User extends Model{
 		 */
 		
 		// **Note**: there is no bcrypt in this one
+
 		const result = await dbClient.query(
 			`SELECT password
 			FROM users
 			WHERE username = $1`,
 		[username]);
 		
+		if (result.rows.length == 0)
+			throw new ExpressError(400, 'User not found.');
+		
 		const returnedPassword = result.rows[0].password;
-
+		
 		return returnedPassword === password;
 		
 	}

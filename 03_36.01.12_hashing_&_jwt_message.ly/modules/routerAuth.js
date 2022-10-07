@@ -1,12 +1,19 @@
 const express = require('express');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 
+const { JWT_SECRET_KEY } = require('../config');
 const User = require('../models/user');
+const { ExpressError } = require('./utilities');
 
 
 const loginHelper = (username) => {
 
     // update last login and create jwt
+    User.updateLoginTimestamp(username);
+    let token = jwt.sign({username}, JWT_SECRET_KEY);
+
+    return token;
 
 }
 
@@ -20,14 +27,16 @@ router.post('/login', async(req, res, nxt) => {
 
     try{
 
-        const username = req.body.username;
-        const result = await User.returnAllModels();
 
-        if(username){
-            loginHelper(username);
-            return res.json({users:result});
+        const username = req.body.username;
+
+        const result = await User.authenticate(username, req.body.password);
+
+        if(result === true){
+            let token = loginHelper(username);
+            return res.json({token});
         }else{
-            // don't login
+            throw new ExpressError(400, 'Wrong password.')
         }
     
     }catch(error){
@@ -46,13 +55,13 @@ router.post('/register', async(req, res, nxt) => {
      */
 
     try{
+
+        // const {username, password, first_name, last_name, phone} = req.body;
+
+        const result = await User.register(req.body);
+        let token = loginHelper(result.username);
         
-        const username = req.body.username;
-
-        const result = await User.returnAllModels();
-
-        loginHelper(username);
-        return res.json({users:result});
+        return res.json({token});
 
     }catch(error){
         nxt(error);
