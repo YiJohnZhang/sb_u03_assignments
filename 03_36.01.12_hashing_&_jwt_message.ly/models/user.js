@@ -3,6 +3,8 @@ const {Model, dbClient} = require('./pgModel');
 
 class User extends Model{
 
+	static relationName = 'users';
+
 	constructor(kwargObjectParameters = undefined){
 
 		super(ModelName.relationName);
@@ -47,7 +49,7 @@ class User extends Model{
 
 	static async confirmModelByPK(primaryKey){
 		// Confirms whether or not the primary key exists in the database; only returns the primary key prevent returning sensitive information. Intended for middleware to validate existence.
-		const result = await db.query(
+		const result = await dbClient.query(
 			`SELECT primaryKey
 			FROM ${this.relationName}
 			WHERE username = $1`,
@@ -65,12 +67,17 @@ class User extends Model{
 	 * [{username, first_name, last_name, phone}, ...] */
 
 		//implemented already as 'returnAllModels()'
+		const result = await dbClient.query(
+			`SELECT username, first_name, last_name, phone
+			FROM ${this.relationName}`);
+		
+		return result.rows;
 
 	}	
 
 	static async returnModelByPK(primaryKey){
 		// Returns a model by PK in the database, general. Returns `.json`. Gracefully returns false if DNE.
-		const result = await db.query(
+		const result = await dbClient.query(
 			`SELECT *
 			FROM ${this.relationName}
 			WHERE username = $1`,
@@ -84,12 +91,19 @@ class User extends Model{
 	/*	Get: get user by username
 	 *
 	 *	returns {username, first_name, last_name, phone, join_at, last_login_at } */	
+		const result = await dbClient.query(
+			`SELECT username, first_name, last_name, phone, join_at, last_login_at
+			FROM ${this.relationName}
+			WHERE username = $1`,
+			[username]);
+	
+		return result.rows[0];
 
 	}
 
 	static async deleteModelByPK(primaryKey){
 		// Delete a record in the database by primary key. Use only after middleware confirming existence.
-		const result = await db.query(
+		const result = await dbClient.query(
 			`DELETE FROM ${this.relationName}
 			WHERE username = $1`,
 			[primaryKey]);
@@ -101,7 +115,14 @@ class User extends Model{
 		/** register new user -- returns
 		*    {username, password, first_name, last_name, phone}
 		*/
-
+		const result = await dbClient.query(
+			`INSERT INTO users(username, password, first_name, last_name, phone)
+				VALUES($1, $2, $3, $4, $5)
+				RETURNING *
+			`, [username, password, first_name, last_name, phone]
+		);
+		
+		return result.rows[0];		
 
 	}
 
@@ -117,18 +138,38 @@ class User extends Model{
 	static async updateLoginTimestamp(username) {
 		/** Update last_login_at for user */
 	
-	
 	}
 
 	static async messagesFrom(username) {
 	/*	Return messages from this user.
 	 *	
-	 *	[{id, to_user, body, sent_at, read_at}]
+	 *	[{id, to_username, body, sent_at, read_at}]
 	 *
 	 *	where to_user is
 	 *		{username, first_name, last_name, phone}
 	 */
+		const messageResult = await dbClient.query(`
+			SELECT from_username, body, sent_at, read_at
+			FROM messages
+			WHERE to_username = $1
+		`,[username]);
 
+		messageArray = messageResult.rows;
+
+		// build array of Promises
+		let userPromises = [];
+		messageArray.forEach((messageEntry) => {
+			const userResult = dbClient.query(`
+				SELECT username, first_name, last_name, phone
+				FROM users
+				WHERE username = $1
+			`,[messageEntry.from_username]);
+
+			userPromises.push(userResult);
+		});
+
+		const userResults = await Promise.all(userPromises);
+		console.log(userResults);
 
 		
 	}
@@ -136,12 +177,14 @@ class User extends Model{
 	static async messagesTo(username) {
 	/*	Return messages to this user.
 	 *	
-	 *	[{id, from_user, body, sent_at, read_at}]
+	 *	[{id, from_username, body, sent_at, read_at}]
 	 *	
 	 *	where from_user is
 	 *   {username, first_name, last_name, phone}
 	 */	
 
 	}
+
+}
 
 module.exports = User;

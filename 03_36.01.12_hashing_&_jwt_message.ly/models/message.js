@@ -1,7 +1,7 @@
 /** Message class for message.ly */
 
-const db = require("../db");
-const ExpressError = require("../expressError");
+const db = require("../database/db");
+const {ExpressError} = require("../modules/utilities");
 
 
 /** Message on the site. */

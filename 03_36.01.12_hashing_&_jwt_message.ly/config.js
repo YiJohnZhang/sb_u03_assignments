@@ -3,9 +3,8 @@
 
 require('dotenv').config();	// read .env files and make environmental variables
 
-const DB_URI = (process.env.NODE_ENV === "test")
-	? "postgresql:///sb_36_01_12_messagely_test"
-	: "postgresql:///sb_36_01_12_messagely";
+const DB_URI = process.env.NODE_ENV === "test"	? "postgresql:///sb_36_01_12_messagely_test" : "postgresql:///sb_36_01_12_messagely";
+  // yeah, apparently the database wasn't being run in the old format ._.
 
 const PORT_NUMBER = 3000;	//process.env it later
 
