@@ -1,7 +1,3 @@
-const returnMedian = (leftIndex, rightIndex) => {
-	return Math.floor((leftIndex+rightIndex)/2);
-}
-
 function countZeroes(testArray) {
 
 	// m, l, r = shifting middleIndex, leftIndex, rightIndex respectively.
@@ -10,13 +6,12 @@ function countZeroes(testArray) {
 
 	let l = 0;
 	let r = testArray.length-1;
-	let m = returnMedian(l, r);
 
 	let zeroIndex = testArray.length;
 
 	while(l <= r){
 
-		let m = returnMedian(l, r);
+		let m = Math.floor((l+r)/2);
 		
 		if(testArray[m] === 1){
 
