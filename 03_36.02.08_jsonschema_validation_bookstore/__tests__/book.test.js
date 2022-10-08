@@ -1,3 +1,6 @@
+const request = require("supertest");
+const app = require("../app");
+
 const dbClient = require('../db');
 const Book = require('../models/book');
 
@@ -37,6 +40,17 @@ const bookTwo = {
 	// https://numbergenerator.org/random-10-digit-number-generator
 	// https://www.amazon.com/013143506X
 
+const malformedBookObjectOne = {
+	"amazon_url": "https://www.amazon.com/013143506X",
+	"author": 'Erhan Kudeki & David Munson',
+	"language": "english",
+	"pages": 528,
+	"publisher": "Pearson",
+	"title": "aasdf",
+	"year": 2008
+}
+	// bookTwo without isbn
+
 describe('test \`Book\` model', () => {
 
 	beforeEach(async() => {
@@ -48,6 +62,24 @@ describe('test \`Book\` model', () => {
 		// await db.query("ALTER SEQUENCE  RESTART WITH 1");
 		await Book.create(bookOne);
 		await Book.create(bookTwo);
+
+	});
+
+	test('400 Bad Request: Malformed request body', async () => {
+
+		// model
+
+		// request
+		try{
+
+			const resposne = await request(app)
+				.post('/books/')
+				.send(malformedBookObjectOne);
+
+		}catch(error){
+			expect(error.message).toBeTruthy();
+			expect(error.status).toBe(400);
+		}
 
 	});
 

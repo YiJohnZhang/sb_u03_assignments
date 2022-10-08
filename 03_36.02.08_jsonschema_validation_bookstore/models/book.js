@@ -157,9 +157,8 @@ class Book {
          RETURNING isbn`,
         [isbn]);
 
-
     this.testResults(result, isbn);  // a half-hearted refactor
-    
+
   }
 }
 

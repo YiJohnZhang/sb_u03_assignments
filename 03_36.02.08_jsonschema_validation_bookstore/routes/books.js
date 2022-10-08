@@ -1,14 +1,14 @@
 const express = require("express");
-const Book = require("../models/book");
-
 const router = new express.Router();
 
+const Book = require("../models/book");
+const {validateBookMiddleware} = require('../validation.middleware');
 
 /** GET / => {books: [book, ...]}  */
 
 router.get("/", async function (req, res, next) {
   try {
-    const books = await Book.findAll(req.query);
+    const books = await Book.findAll();
     return res.json({ books });
   } catch (err) {
     return next(err);
@@ -28,7 +28,7 @@ router.get("/:id", async function (req, res, next) {
 
 /** POST /   bookData => {book: newBook}  */
 
-router.post("/", async function (req, res, next) {
+router.post("/", validateBookMiddleware, async function (req, res, next) {
   try {
     const book = await Book.create(req.body);
     return res.status(201).json({ book });
@@ -39,7 +39,7 @@ router.post("/", async function (req, res, next) {
 
 /** PUT /[isbn]   bookData => {book: updatedBook}  */
 
-router.put("/:isbn", async function (req, res, next) {
+router.put("/:isbn", validateBookMiddleware, async function (req, res, next) {
   try {
     const book = await Book.update(req.params.isbn, req.body);
     return res.json({ book });
