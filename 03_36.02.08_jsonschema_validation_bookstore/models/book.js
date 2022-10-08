@@ -1,5 +1,5 @@
 const db = require("../db");
-
+const ExpressError = require('../expressError');
 
 /** Collection of related methods for books. */
 
@@ -9,6 +9,16 @@ class Book {
    * => {isbn, amazon_url, author, language, pages, publisher, title, year}
    *
    **/
+
+  static testResults(result, isbn){
+    // a half-hearted refactor
+
+    if(result.rows.length === 0)
+      throw new ExpressError(`There is no book with an isbn \'${isbn}\'.`, 404);
+
+    return;
+
+  }
 
   static async findOne(isbn) {
     const bookRes = await db.query(
@@ -23,9 +33,7 @@ class Book {
             FROM books 
             WHERE isbn = $1`, [isbn]);
 
-    if (bookRes.rows.length === 0) {
-      throw { message: `There is no book with an isbn '${isbn}`, status: 404 }
-    }
+    this.testResults(bookRes, isbn);  // a half-hearted refactor
 
     return bookRes.rows[0];
   }
@@ -135,9 +143,7 @@ class Book {
       ]
     );
 
-    if (result.rows.length === 0) {
-      throw { message: `There is no book with an isbn '${isbn}`, status: 404 }
-    }
+    this.testResults(result, isbn);  // a half-hearted refactor
 
     return result.rows[0];
   }
@@ -151,9 +157,9 @@ class Book {
          RETURNING isbn`,
         [isbn]);
 
-    if (result.rows.length === 0) {
-      throw { message: `There is no book with an isbn '${isbn}`, status: 404 }
-    }
+
+    this.testResults(result, isbn);  // a half-hearted refactor
+    
   }
 }
 
