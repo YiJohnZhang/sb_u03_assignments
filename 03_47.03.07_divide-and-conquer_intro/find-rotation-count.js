@@ -38,7 +38,7 @@ function findRotationCount(arr) {
 
 }
 
-const testArray = [15, 18, 2, 3, 6, 12];
-findRotationCount(testArray);
+// const testArray = [15, 18, 2, 3, 6, 12];
+// findRotationCount(testArray);
 
 module.exports = findRotationCount
